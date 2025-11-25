@@ -20,10 +20,12 @@ import {
   Cell,
 } from 'recharts'
 import { useState, useEffect } from 'react'
+import { Menu, X } from 'lucide-react'
 
 export default function DashboardPage() {
   const [aiInsight, setAiInsight] = useState('')
   const [showAI, setShowAI] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [portfolioData, setPortfolioData] = useState({
     balance: 1000000,
     investedAmount: 650000,
@@ -153,28 +155,42 @@ export default function DashboardPage() {
   }, []); // Remove holdings from dependencies since it's static
 
   return (
-    <div className="flex">
-      <Sidebar />
-      <main className="ml-64 p-8 w-full">
-        {/* Header with AI Button */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">Portfolio Dashboard</h1>
-            <p className="text-muted-foreground">AI-powered portfolio analytics & insights</p>
-          </div>
-          <button 
-            onClick={() => setShowAI(!showAI)}
-            className="text-sm px-4 py-2 rounded bg-primary text-primary-foreground hover:opacity-90"
+    <div className="flex min-h-screen bg-background">
+      <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+
+      <main className="flex-1 md:ml-64 transition-all duration-300">
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b bg-card">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 hover:bg-accent rounded-lg"
           >
-            {showAI ? 'Hide' : 'Show'} AI Coach
+            <Menu className="h-6 w-6" />
           </button>
+          <h1 className="text-xl font-bold">InvestIQ</h1>
+          <div className="w-10" /> {/* Spacer for centering */}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Main Portfolio Content */}
-          <div className="lg:col-span-3 space-y-8">
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="p-4 md:p-8">
+          {/* Header with AI Button */}
+          <div className="mb-6 md:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">Portfolio Dashboard</h1>
+              <p className="text-muted-foreground text-sm md:text-base">AI-powered portfolio analytics & insights</p>
+            </div>
+            <button
+              onClick={() => setShowAI(!showAI)}
+              className="text-sm px-4 py-2 rounded bg-primary text-primary-foreground hover:opacity-90 w-full sm:w-auto"
+            >
+              {showAI ? 'Hide' : 'Show'} AI Coach
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8">
+            {/* Main Portfolio Content */}
+            <div className="lg:col-span-3 space-y-6 md:space-y-8">
+              {/* Key Metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Portfolio Value</CardTitle>
@@ -233,15 +249,15 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Charts */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-8">
               {/* Portfolio Growth */}
               <Card>
                 <CardHeader>
                   <CardTitle>Portfolio Growth (30 Days)</CardTitle>
                 </CardHeader>
                 <CardContent className="chart-container">
-                  <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <AreaChart data={growthData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }} style={{ backgroundColor: 'hsl(var(--background))' }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                       <XAxis dataKey="date" stroke="#9ca3af" style={{ fontSize: '12px' }} />
@@ -274,25 +290,25 @@ export default function DashboardPage() {
                   <CardTitle>Sector Allocation</CardTitle>
                 </CardHeader>
                 <CardContent className="chart-container">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={sectorData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name}: ${(value / portfolioValue * 100).toFixed(1)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {sectorData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => `₹${formatCurrency(Number(value))}`} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                      <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
+                        <PieChart>
+                          <Pie
+                            data={sectorData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, value }) => `${name}: ${(value / portfolioValue * 100).toFixed(1)}%`}
+                            outerRadius={70}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {sectorData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => `₹${formatCurrency(Number(value))}`} />
+                        </PieChart>
+                      </ResponsiveContainer>
                 </CardContent>
               </Card>
             </div>
@@ -303,8 +319,8 @@ export default function DashboardPage() {
                 <CardTitle>Monthly Returns & Drawdowns</CardTitle>
               </CardHeader>
               <CardContent className="chart-container">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={returnsData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }} style={{ backgroundColor: 'hsl(var(--background))' }}>
+                  <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
+                    <LineChart data={returnsData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }} style={{ backgroundColor: 'hsl(var(--background))' }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis dataKey="month" stroke="#9ca3af" style={{ fontSize: '12px' }} />
                     <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
@@ -325,51 +341,89 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Holdings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Current Holdings ({holdings.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Symbol</th>
-                        <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Qty</th>
-                        <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Avg Price</th>
-                        <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Current</th>
-                        <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Change</th>
-                        <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Value</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                {/* Holdings */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg md:text-xl">Current Holdings ({holdings.length})</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Mobile Card View */}
+                    <div className="block md:hidden space-y-4">
                       {holdings.map(h => {
                         const value = h.qty * h.currentPrice
                         return (
-                          <tr key={h.symbol} className="border-b border-border/50 hover:bg-card/50">
-                            <td className="py-3 px-3"><span className="font-semibold">{h.symbol}</span></td>
-                            <td className="py-3 px-3">{h.qty}</td>
-                            <td className="py-3 px-3">₹{h.avgPrice}</td>
-                            <td className="py-3 px-3">₹{h.currentPrice}</td>
-                            <td className={`py-3 px-3 font-semibold ${h.change >= 0 ? 'gain' : 'loss'}`}>{h.change >= 0 ? '+' : ''}{h.change}%</td>
-                            <td className="py-3 px-3 font-semibold">₹{formatCurrency(value)}</td>
-                          </tr>
+                          <div key={h.symbol} className="border border-border rounded-lg p-4 space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="font-semibold text-lg">{h.symbol}</span>
+                              <span className={`font-semibold ${h.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {h.change >= 0 ? '+' : ''}{h.change}%
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Quantity:</span>
+                                <span className="ml-2 font-medium">{h.qty}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Avg Price:</span>
+                                <span className="ml-2 font-medium">₹{h.avgPrice}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Current:</span>
+                                <span className="ml-2 font-medium">₹{h.currentPrice}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Value:</span>
+                                <span className="ml-2 font-medium">₹{formatCurrency(value)}</span>
+                              </div>
+                            </div>
+                          </div>
                         )
                       })}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                    </div>
 
-          {/* AI Coach Sidebar */}
-          {showAI && (
-            <div className="lg:col-span-1 h-fit sticky top-8">
-              <AIAssistant />
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-border">
+                            <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Symbol</th>
+                            <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Qty</th>
+                            <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Avg Price</th>
+                            <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Current</th>
+                            <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Change</th>
+                            <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {holdings.map(h => {
+                            const value = h.qty * h.currentPrice
+                            return (
+                              <tr key={h.symbol} className="border-b border-border/50 hover:bg-card/50">
+                                <td className="py-3 px-3"><span className="font-semibold">{h.symbol}</span></td>
+                                <td className="py-3 px-3">{h.qty}</td>
+                                <td className="py-3 px-3">₹{h.avgPrice}</td>
+                                <td className="py-3 px-3">₹{h.currentPrice}</td>
+                                <td className={`py-3 px-3 font-semibold ${h.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>{h.change >= 0 ? '+' : ''}{h.change}%</td>
+                                <td className="py-3 px-3 font-semibold">₹{formatCurrency(value)}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* AI Coach Sidebar */}
+              {showAI && (
+                <div className="lg:col-span-1 h-fit sticky top-8">
+                  <AIAssistant />
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </main>
     </div>

@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button'
 import { TOP_STOCKS, generatePriceData } from '@/lib/market-data'
 import Link from 'next/link'
 import { useState, useMemo } from 'react'
+import { Menu } from 'lucide-react'
 
 export default function StocksPage() {
   const [search, setSearch] = useState('')
   const [sector, setSector] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const sectors = [...new Set(TOP_STOCKS.map(s => s.sector))]
 
@@ -23,12 +25,26 @@ export default function StocksPage() {
   }, [search, sector])
 
   return (
-    <div className="flex">
-      <Sidebar />
-      <main className="ml-64 p-8 w-full">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Stocks</h1>
+    <div className="flex min-h-screen bg-background">
+      <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+
+      <main className="flex-1 md:ml-64 transition-all duration-300">
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b bg-card">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 hover:bg-accent rounded-lg"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+          <h1 className="text-xl font-bold">InvestIQ</h1>
+          <div className="w-10" /> {/* Spacer for centering */}
+        </div>
+
+        <div className="p-4 md:p-8">
+          {/* Header */}
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-4">Stocks</h1>
 
           {/* Search Bar */}
           <div className="mb-4">
@@ -63,8 +79,8 @@ export default function StocksPage() {
           </div>
         </div>
 
-        {/* Stocks Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Stocks Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {filtered.map(stock => {
             const data = generatePriceData(stock.basePrice, 100)
             const currentPrice = data[data.length - 1].price
@@ -98,13 +114,14 @@ export default function StocksPage() {
           })}
         </div>
 
-        {filtered.length === 0 && (
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">No stocks found matching your criteria.</p>
-            </CardContent>
-          </Card>
-        )}
+          {filtered.length === 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">No stocks found matching your criteria.</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </main>
     </div>
   )

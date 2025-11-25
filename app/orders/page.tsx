@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { useState, useEffect } from 'react'
+import { Menu } from 'lucide-react'
 
 interface Order {
   id: string
@@ -23,6 +24,7 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'executed' | 'cancelled'>('executed')
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const fetchOrders = async () => {
     try {
@@ -131,17 +133,31 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="flex">
-      <Sidebar />
-      <main className="ml-64 p-8 w-full">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">My Orders</h1>
-          <p className="text-muted-foreground">Track and manage all your trades</p>
+    <div className="flex min-h-screen bg-background">
+      <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+
+      <main className="flex-1 md:ml-64 transition-all duration-300">
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b bg-card">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 hover:bg-accent rounded-lg"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+          <h1 className="text-xl font-bold">InvestIQ</h1>
+          <div className="w-10" /> {/* Spacer for centering */}
         </div>
 
-        {/* Trade Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="p-4 md:p-8">
+          {/* Header */}
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">My Orders</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Track and manage all your trades</p>
+          </div>
+
+          {/* Trade Statistics */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Trades</CardTitle>
@@ -185,15 +201,15 @@ export default function OrdersPage() {
           </Card>
         </div>
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Charts */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-8 mb-6 md:mb-8">
           <Card>
             <CardHeader>
               <CardTitle>Monthly P&L</CardTitle>
             </CardHeader>
             <CardContent className="chart-container">
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={monthlyPnL}>
+                <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
+                  <BarChart data={monthlyPnL}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="month" />
                   <YAxis />
@@ -209,8 +225,8 @@ export default function OrdersPage() {
               <CardTitle>Trades per Month</CardTitle>
             </CardHeader>
             <CardContent className="chart-container">
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={monthlyPnL}>
+                <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
+                  <LineChart data={monthlyPnL}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="month" />
                   <YAxis />
@@ -339,13 +355,14 @@ export default function OrdersPage() {
           ))}
         </div>
 
-        {filtered.length === 0 && (
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">No {activeTab} orders found.</p>
-            </CardContent>
-          </Card>
-        )}
+          {filtered.length === 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">No {activeTab} orders found.</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </main>
     </div>
   )
