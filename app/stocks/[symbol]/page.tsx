@@ -35,6 +35,10 @@ export default function StockDetailPage() {
   const change = (realtimePrice as any)?.change || 0
   const changePercent = (realtimePrice as any)?.change_percent || 0
 
+  // Get stock name from database if available, fallback to static data
+  const stockName = realtimePrice?.name || stock?.name || symbol
+  const stockSector = stock?.sector || 'Unknown'
+
   useEffect(() => {
     const fetchHistoricalData = async () => {
       setLoading(true)
@@ -141,14 +145,14 @@ export default function StockDetailPage() {
       <main className="ml-64 p-8 w-full">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">{stock.name}</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-2">{stockName}</h1>
           <div className="flex items-center gap-4 mb-4">
             <p className="text-3xl font-bold text-foreground">₹{currentPrice.toFixed(2)}</p>
             <p className={`text-lg font-semibold ${changePercent >= 0 ? 'gain' : 'loss'}`}>
               {changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}% ({change >= 0 ? '+' : ''}₹{change.toFixed(2)})
             </p>
           </div>
-          <p className="text-muted-foreground">{stock.sector}</p>
+          <p className="text-muted-foreground">{stockSector}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -237,7 +241,7 @@ export default function StockDetailPage() {
           {/* Trading Panel */}
           <Card>
             <CardHeader>
-              <CardTitle>Trade {stock.symbol}</CardTitle>
+              <CardTitle>Trade {symbol}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Order Type Toggle */}
@@ -421,15 +425,15 @@ export default function StockDetailPage() {
             <CardContent className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Sector</span>
-                <span className="font-semibold text-foreground">{stock.sector}</span>
+                <span className="font-semibold text-foreground">{stockSector}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">52W High</span>
-                <span className="font-semibold text-foreground">₹{(stock.basePrice * 1.25).toFixed(2)}</span>
+                <span className="font-semibold text-foreground">₹{(currentPrice * 1.25).toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">52W Low</span>
-                <span className="font-semibold text-foreground">₹{(stock.basePrice * 0.75).toFixed(2)}</span>
+                <span className="font-semibold text-foreground">₹{(currentPrice * 0.75).toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Volume</span>

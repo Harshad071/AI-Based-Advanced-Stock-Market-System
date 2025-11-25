@@ -121,6 +121,11 @@ export function getRealtimePrice(basePrice: number, lastPrice?: number): number 
 }
 
 export function isMarketOpen(): boolean {
+  // For demo purposes, always return true to allow data fetching
+  // In production, uncomment the logic below
+  return true;
+
+  /*
   const now = new Date();
   // Convert to IST (UTC+5:30)
   const istOffset = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
@@ -139,6 +144,7 @@ export function isMarketOpen(): boolean {
   const closeTime = MARKET_HOURS.close.hours * 60 + MARKET_HOURS.close.minutes;
 
   return currentTime >= openTime && currentTime <= closeTime;
+  */
 }
 
 export function getNextMarketOpen(): Date {
@@ -337,7 +343,7 @@ export function generateRealtimePrice(symbol: string) {
 
   // Generate realistic price movements for demo purposes
   // Always add some movement, but smaller outside market hours
-  const volatility = isOpen ? 0.005 : 0.001; // 0.5% during market, 0.1% outside
+  const volatility = isOpen ? 0.03 : 0.005; // 3% during market, 0.5% outside (increased for visible P&L changes)
   const movement = (Math.random() - 0.5) * 2 * volatility;
   const change = basePrice * movement;
   const currentPrice = basePrice + change;

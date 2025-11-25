@@ -3,15 +3,25 @@
 import { Sidebar } from '@/components/layout/sidebar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { TOP_STOCKS, generatePriceData } from '@/lib/market-data'
+import { TOP_STOCKS } from '@/lib/market-data'
 import Link from 'next/link'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Menu } from 'lucide-react'
+import { useRealtimePrices } from '@/hooks/use-realtime-prices'
 
 export default function StocksPage() {
   const [search, setSearch] = useState('')
   const [sector, setSector] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [priceUpdateTrigger, setPriceUpdateTrigger] = useState(0)
+
+  // Get real-time prices for all stocks
+  const { prices: realtimePrices } = useRealtimePrices(TOP_STOCKS.map(s => s.symbol))
+
+  // Force re-render when prices change
+  useEffect(() => {
+    setPriceUpdateTrigger(prev => prev + 1)
+  }, [realtimePrices])
 
   const sectors = [...new Set(TOP_STOCKS.map(s => s.sector))]
 
@@ -22,7 +32,7 @@ export default function StocksPage() {
       const matchesSector = !sector || stock.sector === sector
       return matchesSearch && matchesSector
     })
-  }, [search, sector])
+  }, [search, sector, priceUpdateTrigger]) // Use priceUpdateTrigger to trigger re-render when prices change
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -82,17 +92,19 @@ export default function StocksPage() {
           {/* Stocks Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {filtered.map(stock => {
-            const data = generatePriceData(stock.basePrice, 100)
-            const currentPrice = data[data.length - 1].price
+            const realtimePrice = realtimePrices[stock.symbol]
+            const currentPrice = realtimePrice?.price || stock.basePrice
             const change = currentPrice - stock.basePrice
             const changePercent = (change / stock.basePrice) * 100
+            const dayHigh = realtimePrice?.high || currentPrice * 1.02
+            const dayLow = realtimePrice?.low || currentPrice * 0.98
 
             return (
               <Link key={stock.symbol} href={`/stocks/${stock.symbol}`}>
                 <Card className="cursor-pointer hover:border-primary transition-colors h-full">
                   <CardHeader className="pb-2">
                     <div>
-                      <CardTitle className="text-lg">{stock.name}</CardTitle>
+                      <CardTitle className="text-lg">{realtimePrice?.name || stock.name}</CardTitle>
                       <p className="text-xs text-muted-foreground mt-1">{stock.symbol} • {stock.sector}</p>
                     </div>
                   </CardHeader>
@@ -104,8 +116,8 @@ export default function StocksPage() {
                       </p>
                     </div>
                     <div className="text-xs text-muted-foreground space-y-1">
-                      <p>Day High: ₹{Math.max(...data.map(p => p.price)).toFixed(2)}</p>
-                      <p>Day Low: ₹{Math.min(...data.map(p => p.price)).toFixed(2)}</p>
+                      <p>Day High: ₹{dayHigh.toFixed(2)}</p>
+                      <p>Day Low: ₹{dayLow.toFixed(2)}</p>
                     </div>
                   </CardContent>
                 </Card>
